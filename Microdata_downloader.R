@@ -11,6 +11,7 @@ setwd() #set working directory here
 # Get column header info--only have to do this once.
 series_ids<-read.csv("ColNames.csv",strip.white=TRUE, stringsAsFactors=FALSE) #May need to modify headers for pre-Jan. 2013 files
 headers<-as.list(series_ids$series_id)
+lengths<-as.list(series_ids$series_length)
 
 ###################
 #
@@ -34,18 +35,7 @@ FileName<-paste(Month,"pub.dat",sep="")
 # Download file. Enter target destination in in quotes.
 download.file(URL,temp)
 # Read it as FWF
-raw<-read.fwf(unz(temp,FileName),widths=c(15,2,4,2,3,2,2,2,2,2,2,2,2,2,
-2,10,2,2,2,2,2,2,2,5,2,1,2,2,2,2,2,2,2,2,1,5,3,1,1,1,1,3,3,2,2,2,2,2,1,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,3,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,3,2,5,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,3,2,2,2,2,2,2,2,2,2,2,2,2,2,6,2,2,6,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,4,4,4,1,2,8,1,4,8,8,1,2,2,2,2,2,
-2,2,2,2,2,2,2,2,10,10,10,10,10,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,4,2,2,2,2,2,2,2,2,2,2,2,2,5,2,2,2,2,2,2,2,2,2,2,2,
-2,2,10,4,4,4,4,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-15),
+raw<-read.fwf(unz(temp,FileName),widths=as.list(lengths),
 col.names=headers,stringsAsFactors=FALSE,na.strings=c("-1",-1))
 unlink(temp)
 # create unique person identifier. Drops records with pulineno as NA
