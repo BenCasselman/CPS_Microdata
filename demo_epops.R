@@ -629,3 +629,376 @@ shiny_data %>%
   recession_shade("1995-12-01")
 
 
+
+  
+  
+  shiny_data %>% 
+    filter(year(date) >= 2012) %>% 
+    group_by(date, ed) %>% 
+    filter(age %in% c("Ages 25-34", "Ages 35-44", "Ages 45-54"),
+           date >= ymd("2011-01-01")) %>%
+    summarize(emp = sum(emp)) %>% 
+    group_by(ed) %>% 
+    mutate(emp = emp - emp[1]) %>% 
+    arrange(date) %>% 
+    spread(ed, emp) %>% View()
+  
+  
+  
+  
+p1 <- lf_demo %>% 
+  mutate(ed = factor(ed, levels = c("less_than_HS", "HS_GED", "some_college", "BA_plus"), labels = c("Less than high school", "High school diploma or GED", "Some college", "Bachelor's degree or more"))) %>% 
+  filter(date >= ymd("2007-02-01")) %>% 
+  group_by(date, ed) %>% 
+  summarize(emp = sum(emp),
+            pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% 
+  arrange(date) %>% 
+  group_by(ed) %>% 
+  mutate(roll = rollmean(epop, 12, na.pad = T, align = "right")) %>% 
+  filter(!is.na(roll)) %>% 
+  mutate(change = 100*(roll - roll[1])) %>% 
+  ggplot(., aes(date, change, colour = ed)) + geom_line(size = 1.1)
+  
+p1 <- p1 + 
+  labs(x = NULL, y = "Change since Jan. 2008 (percentage points)",
+     title = "Employment rate by educational attainment",
+     subtitle = "Change since Jan. 2008, 12-month rolling average",
+     caption = "Source: Current Population Survey via IPUMS") +
+  theme(plot.title = element_text(size = 16),
+        plot.subtitle = element_text(size = 12),
+        plot.background = element_rect(fill = "grey92"),
+        panel.grid.major = element_line(colour = "grey", size = 0.15),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(colour = "grey50"),
+        axis.ticks = element_line(colour = "grey", size = 0.15),
+        plot.caption = element_text(colour = "grey50"),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.position = "top") +
+  annotate("rect", xmin = ymd("2008-01-01"), xmax = ymd("2009-06-01"), ymin = -Inf, ymax = Inf,alpha = 0.2)
+
+ggsave("emp.png", p1, device = "png", width = 7.1, height = 4)
+
+p2 <- lf_demo %>% 
+  mutate(ed = factor(ed, levels = c("less_than_HS", "HS_GED", "some_college", "BA_plus"), labels = c("Less than high school", "High school diploma or GED", "Some college", "Bachelor's degree or more"))) %>% 
+  filter(date >= ymd("2007-02-01")) %>% 
+  group_by(date, ed) %>% 
+  summarize(emp = sum(FT),
+            pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% 
+  arrange(date) %>% 
+  group_by(ed) %>% 
+  mutate(roll = rollmean(epop, 12, na.pad = T, align = "right")) %>% 
+  filter(!is.na(roll)) %>% 
+  mutate(change = 100*(roll - roll[1])) %>% 
+  ggplot(., aes(date, change, colour = ed)) + geom_line(size = 1.1)
+
+p2 <- p2 + 
+  labs(x = NULL, y = "Change since Jan. 2008 (percentage points)",
+       title = "Full-time employment rate",
+       subtitle = "Change since Jan. 2008, 12-month rolling average",
+       caption = "Source: Current Population Survey via IPUMS") +
+  theme(plot.title = element_text(size = 16),
+        plot.subtitle = element_text(size = 12),
+        plot.background = element_rect(fill = "grey92"),
+        panel.grid.major = element_line(colour = "grey", size = 0.15),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(colour = "grey50"),
+        axis.ticks = element_line(colour = "grey", size = 0.15),
+        plot.caption = element_text(colour = "grey50"),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.position = "top") +
+  annotate("rect", xmin = ymd("2008-01-01"), xmax = ymd("2009-06-01"), ymin = -Inf, ymax = Inf,alpha = 0.2)
+
+ggsave("ft.png", p2, device = "png", width = 7.1, height = 4)
+
+
+p3 <- lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54")) %>% 
+  mutate(ed = factor(ed, levels = c("less_than_HS", "HS_GED", "some_college", "BA_plus"), labels = c("Less than high school", "High school diploma or GED", "Some college", "Bachelor's degree or more"))) %>% 
+  filter(date >= ymd("2007-02-01")) %>% 
+  group_by(date, ed) %>% 
+  summarize(emp = sum(emp),
+            pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% 
+  arrange(date) %>% 
+  group_by(ed) %>% 
+  mutate(roll = rollmean(epop, 12, na.pad = T, align = "right")) %>% 
+  filter(!is.na(roll)) %>% 
+  mutate(change = 100*(roll - roll[1])) %>% 
+  ggplot(., aes(date, change, colour = ed)) + geom_line(size = 1.1)
+
+p3 <- p3 + 
+  labs(x = NULL, y = "Change since Jan. 2008 (percentage points)",
+       title = "Prime=age employment rate by educational attainment",
+       subtitle = "Change since Jan. 2008, 12-month rolling average",
+       caption = "Source: Current Population Survey via IPUMS") +
+  theme(plot.title = element_text(size = 16),
+        plot.subtitle = element_text(size = 12),
+        plot.background = element_rect(fill = "grey92"),
+        panel.grid.major = element_line(colour = "grey", size = 0.15),
+        panel.grid.minor = element_blank(),
+        axis.text = element_text(colour = "grey50"),
+        axis.ticks = element_line(colour = "grey", size = 0.15),
+        plot.caption = element_text(colour = "grey50"),
+        legend.title = element_blank(),
+        legend.background = element_blank(),
+        legend.key = element_blank(),
+        legend.position = "top") +
+  annotate("rect", xmin = ymd("2008-01-01"), xmax = ymd("2009-06-01"), ymin = -Inf, ymax = Inf,alpha = 0.2)
+
+ggsave("prime.png", p3, device = "png", width = 7.1, height = 4)
+
+
+
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"),
+         year(date) == 2016) %>% 
+  group_by(ed) %>% 
+  summarize(pop = sum(pop)) %>% 
+  mutate(share = pop/sum(pop))
+
+ 
+# Add new months of data to lf_demo
+
+i <- 1
+years_add <- 2017
+months_add <- c(11, 12)
+
+for (sex in 1:2) {
+  for (race in 1:5) {
+    for (age in 1:7) {
+      for (ed in 1:4) {
+        for(mar in 1:3) {
+          w <- cps %>% 
+            filter(YEAR == years_add, MONTH %in% months_add, 
+                   SEX %in% sexes[[sex]],
+                   AGE %in% ages[[age]],
+                   EDUC %in% eds[[ed]],
+                   MARST %in% marital[[mar]]) %>% 
+            select(date, RACE, HISPAN, EMPSTAT, UHRSWORK1, WTFINL) %>% 
+            collect() 
+          
+          if (race == 5) {
+            w <- w %>% 
+              filter(HISPAN == 0,
+                     (RACE == 300 | RACE >= 700)) 
+            
+          } else if (race == 3) {
+            w <- w %>% 
+              filter(HISPAN %in% 100:412) 
+            
+          } else if (race == 1) {
+            w <- w %>% 
+              filter(HISPAN == 0,
+                     RACE == 100) 
+            
+          } else if (race == 2) {
+            w <- w %>% 
+              filter(HISPAN == 0,
+                     RACE == 200)
+            
+          } else if (race == 4) {
+            w <- w %>% 
+              filter(HISPAN == 0,
+                     RACE %in% 650:652) 
+          }
+          w <- w %>% mutate(FT = ifelse(EMPSTAT %in% c(10,12) & UHRSWORK1 >= 35, WTFINL, 0),
+                            PT = ifelse(EMPSTAT %in% c(10,12) & UHRSWORK1 < 35, WTFINL, 0),
+                            unemp = ifelse(EMPSTAT %in% 21:22, WTFINL, 0)) %>% 
+            group_by(date) %>% 
+            summarize(FT = sum(FT),
+                      PT = sum(PT),
+                      unemp = sum(unemp),
+                      pop = sum(WTFINL)) %>% 
+            mutate(date = as.Date(date))
+          
+          if (nrow(w) > 0) {
+            w$sex <- names(sexes)[sex]
+            w$race <- races[[race]]
+            w$age <- names(ages)[age]
+            w$ed <- names(eds)[ed]
+            w$marital <- names(marital)[mar]
+            
+            w <- w %>% 
+              mutate(emp = FT + PT,
+                     NILF = pop - (emp + unemp))
+            
+            lf_demo <- bind_rows(lf_demo, w) }
+          
+          rm(w)
+          
+          print(i)
+          i <- i+1
+          
+        }
+      }
+    }
+  }
+}
+
+save(lf_demo, file = "lf_by_demo.RData")
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  spread(race, epop) %>% 
+  mutate(ratio = Black/White) %>% ungroup() %>% 
+  mutate(roll = rollmean(ratio, 12, na.pad = TRUE, align = "right")) %>%
+  ggplot(., aes(date, roll)) + geom_line() + recession_shade("1995-01-01") + 
+  ggtitle("Black prime-age employment rate as a share of white, 1995-2017")
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  group_by(race) %>% 
+  mutate(roll = rollmean(epop, 12, na.pad = TRUE, align = "right")) %>%
+  ggplot(., aes(date, roll, color = race)) + geom_line() + recession_shade("1995-01-01") + 
+  ggtitle("Prime-age employment rates by race, 1995-2017")
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  spread(race, epop) %>% mutate(ratio = Black/White) %>% View("rates")
+
+# FT only
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(FT), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  spread(race, epop) %>% 
+  mutate(ratio = Black/White) %>% ungroup() %>% 
+  mutate(roll = rollmean(ratio, 12, na.pad = TRUE, align = "right")) %>%
+  ggplot(., aes(date, roll)) + geom_line() + recession_shade("1995-01-01") + 
+  ggtitle("Black prime-age full-time employment rate as a share of white, 1995-2017")
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  group_by(race) %>% 
+  mutate(roll = rollmean(epop, 12, na.pad = TRUE, align = "right")) %>%
+  ggplot(., aes(date, roll, color = race)) + geom_line() + recession_shade("1995-01-01") + 
+  ggtitle("Prime-age employment rates by race, 1995-2017")
+
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop),
+            FT = sum(FT)) %>% 
+  mutate(epop = emp/pop, FT = FT/pop) %>% select(date, race, epop, FT) %>% 
+  group_by(race) %>% 
+  mutate(epop = rollmean(epop, 12, na.pad = TRUE, align = "right"),
+         FT = rollmean(FT, 12, na.pad = TRUE, align = "right")) %>%
+  gather(cat, value, -date, -race) %>% filter(!is.na(value)) %>% spread(race, value) %>% mutate(value = Black/White) %>% 
+  ggplot(., aes(date, value, color = cat)) + geom_line() + recession_shade("1995-01-01") + 
+  ggtitle("Prime-age employment rates by race, 1995-2017")
+
+
+# Black-white unemployment ratio
+lf_demo %>% 
+  filter(race %in% c("Black", "White")) %>% 
+  mutate(lf = emp + unemp) %>% 
+  group_by(date, race) %>% 
+  summarize(lf = sum(lf), unemp = sum(unemp)) %>% 
+  mutate(UER = unemp/lf) %>% 
+  select(date, race, UER) %>% 
+  spread(race, UER) %>% 
+  mutate(ratio = Black/White) %>% ungroup() %>% 
+  mutate(roll = rollmean(ratio, 12, na.pad = TRUE, align = "right")) %>%
+  ggplot(., aes(date, roll)) + geom_line()
+
+
+
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  group_by(race) %>% 
+  mutate(epop = 100*rollmean(epop, 12, na.pad = TRUE, align = "right")) %>% filter(!is.na(epop)) %>% 
+  spread(race, epop) %>% 
+  write.csv(., file = "black_emp.csv")
+
+
+lf_demo %>% 
+  filter(age %in% c("age25_34", "age35_44", "age45_54"), race %in% c("Black", "White")) %>% 
+  group_by(date, race) %>% 
+  summarize(emp = sum(emp), pop = sum(pop)) %>% 
+  mutate(epop = emp/pop) %>% select(date, race, epop) %>% 
+  group_by(race) %>% 
+  spread(race, epop) %>% View()
+
+
+
+# 20-something employment by education
+twenties <- cps %>% 
+  filter(AGE %in% 20:29) %>% 
+  collect()
+
+ed_gen2 <- function(x) {
+  sapply(x, function(x) {
+    if (x <= 73) {status <- 1} else
+      if (x %in% 74:109) {status <- 2} else
+        if (x %in% 110:122) { status <- 3} else 
+          if (x %in% 123:125) {status <-  4} else {status <- NA}
+    factor(status, levels = 1:4, labels = c("HS_or_less", "some_college/AA", "BA/BS", "Grad degree"))})
+}
+
+
+twenties <- twenties %>% 
+  filter(!is.na(WTFINL)) %>% 
+  mutate(ed = ed_gen(EDUC),
+         enroll = ifelse(SCHLCOLL %in% c(1,3), "enroll_FT", 
+                         ifelse(SCHLCOLL %in% c(2,4), "enroll_PT", "not_enroll")),
+         ftpt = ifelse(WKSTAT %in% c(10, 11, 13, 14, 15), "FT", 
+                       ifelse(WKSTAT %in% 20:42, "PT", NA)))
+twenties <- twenties %>% 
+  mutate(status = status_gen(EMPSTAT))
+
+twenties <- twenties %>% 
+  mutate(ed2 = ed_gen2(EDUC))
+
+
+epop_20s <- twenties %>% 
+  filter(enroll == "not_enroll") %>% 
+  group_by(date, ed2, status, SEX) %>% 
+  summarize(total = sum(WTFINL)) %>% 
+  group_by(date, ed2, SEX) %>% 
+  mutate(share = total/sum(total)) %>% 
+  filter(status == "E")
+
+p <- epop_20s %>% ungroup() %>% 
+  mutate(SEX = factor(SEX, levels = c(1,2), labels = c("Men","Women")),
+         date = as.Date(ymd(date))) %>%
+  filter(ed2 != "HS_or_less") %>% 
+  group_by(ed2, SEX) %>% 
+  mutate(roll = rollmean(share, 12, na.pad = TRUE, align = "right")) %>%
+  filter(!is.na(roll)) %>% 
+  ggplot(., aes(date, roll, colour = ed2)) + geom_line() + facet_wrap(~SEX) 
+
+p <- p +
+  labs(x = NULL, y = NULL,
+       title = "Employment rate for 20-somethings not enrolled in school",
+       subtitle = "12-month rolling average",
+       caption = "Source: Current Population Survey via IPUMS") +
+  scale_y_continuous(labels = percent) 
+
+ggsave("p1.png", p, device = "png", width = 7.1, height = 4)
+
+  
