@@ -86,12 +86,13 @@ for (i in 1:length(months)) {
              paste0(year(date2), "-", as.numeric(month(date2)), "-01"))
   
   w <- cps %>% 
-    filter(date %in% dates, WTFINL > 0) %>% 
+    filter((MONTH == month(date1) & YEAR == year(date1)) | (MONTH == month(date2) & YEAR == year(date2)),
+           WTFINL > 0) %>% 
     collect() 
   
   # Split by months and merge
-  flow <- w %>% filter(date == date1)
-  flow <- w %>% filter(date == date2) %>% 
+  flow <- w %>% filter(MONTH == month(date1), YEAR == year(date1))
+  flow <- w %>% filter(MONTH == month(date2), YEAR == year(date2)) %>% 
     inner_join(flow, ., by = "CPSIDP")
   
   if (nrow(flow) == 0) {
