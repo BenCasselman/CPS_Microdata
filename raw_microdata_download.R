@@ -14,8 +14,8 @@ raw_data_upload(url)
 # Test it out:
 cps_raw <- src_mysql(dbname = "cass_cps_microdata",
                      host = "127.0.0.1",
-                     user = "cass_test",
-                     password = "cass_test") %>% 
+                     user = user,
+                     password = password) %>% 
   tbl("raw_microdata")
 
 raw_data_upload <- function(url) {

@@ -10,8 +10,8 @@ filename <- "cps_00047.csv" # insert name of file to be read
 
 cps_con <- src_mysql(dbname = "cass_cps_microdata",
                    host = "127.0.0.1",
-                   user = "cass_test",
-                   password = "cass_test")
+                   user = user,
+                   password = password)
 
 
 # First time setup:
@@ -71,8 +71,8 @@ flow %>% group_by(flow) %>%
 con <- dbConnect(RMySQL::MySQL(),
                  dbname = "cass_cps_microdata",
                  host = "127.0.0.1",
-                 user = "cass_test",
-                 password = "cass_test")
+                 user = user,
+                 password = password)
 
 dbWriteTable(con, "flow", flow)
 
