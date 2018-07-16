@@ -5,7 +5,7 @@ library(dbplyr)
 
 # Find URL here and enter it: https://thedataweb.rm.census.gov/ftp/cps_ftp.html
 # (Formats aren't totally consistent, so best to do it this way)
-url <- "https://thedataweb.rm.census.gov/pub/cps/basic/201501-/jan17pub.zip" # Have to change this to https
+url <- "https://thedataweb.rm.census.gov/pub/cps/basic/201501-/nov16pub.zip" # Have to change this to https
 
 # Run in console: cloud_sql_proxy.exe -instances=nytint-stg:us-east1:stg-mysql-mhvl=tcp:3306
 
@@ -53,8 +53,8 @@ raw_data_upload <- function(url) {
   con <- dbConnect(RMySQL::MySQL(),
                    dbname = "cass_cps_microdata",
                    host = "127.0.0.1",
-                   user = "cass_test",
-                   password = "cass_test")
+                   user = user,
+                   password = password)
   
   working %>%
     mutate(date = as.character(date)) %>%
