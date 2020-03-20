@@ -7,7 +7,11 @@ library(zoo)
 library(dbplyr)
 library(scales)
 
-cps <- src_sqlite("cps", create = FALSE) %>% tbl("cps_main")
+cps <- src_mysql(dbname = "cass_cps_microdata",
+                 host = "127.0.0.1",
+                 user = user,
+                 password = password) %>% 
+  tbl("cps_main")
 
 status_gen <- function(x) {
   sapply(x, function(x) {
@@ -45,7 +49,7 @@ race_gen <- function(h, r) {
 
 # Slice of data for 2018
 nowork <- cps %>% 
-  filter(YEAR == 2018, WTFINL > 0) %>% 
+  filter(YEAR == 2018, MONTH %in% c(5,6,7), WTFINL > 0) %>% 
   collect() %>% 
   mutate(date = as.Date(date))
 
@@ -58,7 +62,7 @@ nowork <- nowork %>%
 
 # Sice for 2010 (bottom of recession)
 nowork_10 <- cps %>% 
-  filter(YEAR == 2010, MONTH %in% c(1,2,3), WTFINL > 0) %>% 
+  filter(YEAR == 2010, MONTH %in% c(5,6,7), WTFINL > 0) %>% 
   collect() %>% 
   mutate(date = as.Date(date), 
          status = status_gen(EMPSTAT), 
@@ -68,7 +72,17 @@ nowork_10 <- cps %>%
 
 # Sice for 2007 (before recession)
 nowork_07 <- cps %>% 
-  filter(YEAR == 2007, MONTH %in% c(1,2,3), WTFINL > 0) %>% 
+  filter(YEAR == 2007, MONTH %in% c(5,6,7), WTFINL > 0) %>% 
+  collect() %>% 
+  mutate(date = as.Date(date), 
+         status = status_gen(EMPSTAT), 
+         agegroup = age_gen(AGE),
+         ed = ed_gen(EDUC),
+         race = race_gen(HISPAN, RACE))
+
+# Sice for 2000 (before recession)
+nowork_00 <- cps %>% 
+  filter(YEAR == 2000, MONTH %in% c(5,6,7), WTFINL > 0) %>% 
   collect() %>% 
   mutate(date = as.Date(date), 
          status = status_gen(EMPSTAT), 
@@ -388,3 +402,58 @@ age_distr <- disab %>% filter(LABFORCE == 2) %>%
   left_join(age_distr, by = c("AGE", "SEX", "YEAR"))
 
 write.csv(age_distr, file = "~/Taxes/manufacturing/age_distr.csv")
+
+
+
+# 1,000 samples
+sample_1000 <- nowork %>% 
+  filter(status %in% c("U", "N")) %>% 
+  sample_n(1000, weight = WTFINL)
+
+sample_1000_10 <- nowork_10 %>% 
+  filter(status %in% c("U", "N")) %>% 
+  sample_n(1000, weight = WTFINL)
+
+sample_1000_07 <- nowork_07 %>% 
+  filter(status %in% c("U", "N")) %>% 
+  sample_n(1000, weight = WTFINL)
+
+sample_1000 %>% 
+  mutate(want = cut(WNLOOK, breaks = c(0, 2, 3, 5, 7, 8, 9, 10, 11, 999), 
+                    labels = c("No work available", "Lacks necessary training", "Age or other discrimination", "Childcare or other family", "In school/training", "Ill health/disability", "Transportation problems", "Other", NA)),
+         duration = cut(DURUNEMP, breaks = c(0, 4, 26, 125), labels = c("0-4 weeks", "5-26 weeks", "27+ weeks"), include.lowest = TRUE),
+         marital = cut(MARST, breaks = c(0, 2, 5, 6), labels = c("Married", "Divorced/widowed/separated", "Never")),
+         student = ifelse(SCHLCOLL %in% c(1,3), "full-time student", 
+                          ifelse(SCHLCOLL %in% c(2,4), "part-time student", "non-student")),
+         kids = ifelse(YNGCH < 13, "under_13",
+                       ifelse(YNGCH < 18, "13-17", "no kids")),
+         disabled = ifelse(EMPSTAT == 32, "unable_to_work", NA)) %>% 
+  select(AGE, SEX, race, agegroup, ed, status, want, DURUNEMP, duration, marital, student, kids, disabled) %>% 
+  write.csv(., file = "sample_1000_2018.csv")
+
+sample_1000_07 %>% 
+  mutate(want = cut(WNLOOK, breaks = c(0, 2, 3, 5, 7, 8, 9, 10, 11, 999), 
+                    labels = c("No work available", "Lacks necessary training", "Age or other discrimination", "Childcare or other family", "In school/training", "Ill health/disability", "Transportation problems", "Other", NA)),
+         duration = cut(DURUNEMP, breaks = c(0, 4, 26, 125), labels = c("0-4 weeks", "5-26 weeks", "27+ weeks"), include.lowest = TRUE),
+         marital = cut(MARST, breaks = c(0, 2, 5, 6), labels = c("Married", "Divorced/widowed/separated", "Never")),
+         student = ifelse(SCHLCOLL %in% c(1,3), "full-time student", 
+                          ifelse(SCHLCOLL %in% c(2,4), "part-time student", "non-student")),
+         kids = ifelse(YNGCH < 13, "under_13",
+                       ifelse(YNGCH < 18, "13-17", "no kids")),
+         disabled = ifelse(EMPSTAT == 32, "unable_to_work", NA)) %>% 
+  select(AGE, SEX, race, agegroup, ed, status, want, DURUNEMP, duration, marital, student, kids, disabled) %>% 
+  write.csv(., file = "sample_1000_2007.csv")
+
+sample_1000_10 %>% 
+  mutate(want = cut(WNLOOK, breaks = c(0, 2, 3, 5, 7, 8, 9, 10, 11, 999), 
+                    labels = c("No work available", "Lacks necessary training", "Age or other discrimination", "Childcare or other family", "In school/training", "Ill health/disability", "Transportation problems", "Other", NA)),
+         duration = cut(DURUNEMP, breaks = c(0, 4, 26, 125), labels = c("0-4 weeks", "5-26 weeks", "27+ weeks"), include.lowest = TRUE),
+         marital = cut(MARST, breaks = c(0, 2, 5, 6), labels = c("Married", "Divorced/widowed/separated", "Never")),
+         student = ifelse(SCHLCOLL %in% c(1,3), "full-time student", 
+                          ifelse(SCHLCOLL %in% c(2,4), "part-time student", "non-student")),
+         kids = ifelse(YNGCH < 13, "under_13",
+                       ifelse(YNGCH < 18, "13-17", "no kids")),
+         disabled = ifelse(EMPSTAT == 32, "unable_to_work", NA)) %>% 
+  select(AGE, SEX, race, agegroup, ed, status, want, DURUNEMP, duration, marital, student, kids, disabled) %>% 
+  write.csv(., file = "sample_1000_2010.csv")
+

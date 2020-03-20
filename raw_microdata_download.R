@@ -3,13 +3,23 @@ library(tidyverse)
 library(lubridate)
 library(dbplyr)
 
+# CURRENT DATE RANGE
+# Earliest: May 2012
+# Latest: February 2020
+
 # Find URL here and enter it: https://thedataweb.rm.census.gov/ftp/cps_ftp.html
 # (Formats aren't totally consistent, so best to do it this way)
-url <- "https://thedataweb.rm.census.gov/pub/cps/basic/201501-/nov16pub.zip" # Have to change this to https
+url <- "https://thedataweb.rm.census.gov/pub/cps/basic/201701-/aug18pub.zip" # Have to change this to https
 
 # Run in console: cloud_sql_proxy.exe -instances=nytint-stg:us-east1:stg-mysql-mhvl=tcp:3306
 
-raw_data_upload(url)
+# raw_data_upload(url)
+
+# Group download. Remember to change to https!
+files <- list("https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/jan20pub.zip",
+              "https://www2.census.gov/programs-surveys/cps/datasets/2020/basic/feb20pub.zip")
+
+walk(files, ~raw_data_upload(.x))
 
 # Test it out:
 cps_raw <- src_mysql(dbname = "cass_cps_microdata",
@@ -18,8 +28,12 @@ cps_raw <- src_mysql(dbname = "cass_cps_microdata",
                      password = password) %>% 
   tbl("raw_microdata")
 
+# t <- read_csv("series_lengths_2017.csv", col_types = "cii")
+# db_names <- t$series_id
+# save(db_names, file = "db_names.RData")
+
 raw_data_upload <- function(url) {
-  lengths <- read_csv("series_lengths_2017.csv", col_types = "cii")
+  lengths <- read_csv("series_lengths_2020.csv", col_types = "ciii")
   
   temp <- tempfile()
   download.file(url, temp)
@@ -56,7 +70,12 @@ raw_data_upload <- function(url) {
                    user = user,
                    password = password)
   
+  load("db_names.RData")
+  
+  db_names <- db_names[db_names %in% names(working)]
+  
   working %>%
+    select(db_names) %>% 
     mutate(date = as.character(date)) %>%
     dbWriteTable(con, "raw_microdata", ., append = TRUE, row.names = FALSE)
   

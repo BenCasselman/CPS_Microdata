@@ -2,7 +2,7 @@ library(tidyverse)
 library(dbplyr)
 library(lubridate)
 
-filename <- "cps_00047.csv" # insert name of file to be read
+filename <- "cps_00048.csv" # insert name of file to be read
 
 # Connect to DB
 # Run in console: cloud_sql_proxy.exe -instances=nytint-stg:us-east1:stg-mysql-mhvl=tcp:3306
@@ -19,7 +19,7 @@ cps_con <- src_mysql(dbname = "cass_cps_microdata",
 library(chunked)
 R.utils::gunzip(paste0(filename, ".gz"))
 cps_data <- read_csv_chunkwise(file = filename) %>%
-   mutate(date = paste0(YEAR, "-", MONTH, "-01"))
+  mutate(date = paste0(YEAR, "-", MONTH, "-01"))
 
 #
 # # Now read into sqplite DB
